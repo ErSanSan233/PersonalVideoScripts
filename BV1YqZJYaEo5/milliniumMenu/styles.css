@@ -1,0 +1,741 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    background: rgb(235, 235, 235);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.container {
+    perspective: 2000px;
+    transform-style: preserve-3d;
+    padding: 50px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, calc(100vh + 50%));
+    transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+    z-index: 3;
+    pointer-events: none;
+}
+
+.container.visible {
+    transform: translate(-50%, -50%);
+    pointer-events: auto;
+}
+
+.card {
+    width: 380px;
+    height: 240px;
+    position: relative;
+    transform-style: preserve-3d;
+    cursor: pointer;
+    transform: perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0) scale3d(1, 1, 1);
+}
+
+.card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-inner.is-flipped {
+    transform: rotateY(180deg);
+}
+
+.card-front {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 0 0 rgba(74, 58, 255, 0), 0 0 0 rgba(138, 111, 255, 0);
+    transition: box-shadow 0.2s ease-out;
+    transform: translateZ(1px);
+}
+
+.card-front img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: none;
+    background-color: #000;
+}
+
+.holographic-overlay {
+    position: absolute;
+    top: -30%;
+    left: -30%;
+    right: -30%;
+    bottom: -30%;
+    background: linear-gradient(
+        125deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.05) 10%,
+        rgba(255, 255, 255, 0.2) 20%,
+        rgba(255, 255, 255, 0.05) 30%,
+        rgba(255, 255, 255, 0) 40%
+    );
+    transform: rotate(-45deg);
+    pointer-events: none;
+    mix-blend-mode: overlay;
+    transition: transform 0.1s ease-out;
+}
+
+.laser-effect {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 40%;
+    height: 200%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+    );
+    animation: laser 4s infinite;
+    transform: skewX(-25deg);
+    border-radius: 8px;
+}
+
+@keyframes laser {
+    0% {
+        left: -100%;
+    }
+    40% {
+        left: 0%;
+    }
+    60% {
+        left: 100%;
+    }
+    100% {
+        left: 200%;
+    }
+}
+
+/* 修改卡片的光晕效果 */
+.card-front::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(45deg, 
+        #4A3AFF,  /* 深蓝紫色 */
+        #8A6FFF,  /* 中蓝紫色 */
+        #4A3AFF   /* 深蓝紫色 */
+    );
+    z-index: -1;
+    border-radius: 12px;
+    filter: blur(10px);
+    opacity: 0;
+    transition: opacity 0.2s ease-out;
+}
+
+/* 悬浮时显示光晕 */
+.card-front.hover::before {
+    opacity: 0.5;
+}
+
+/* 添加卡片悬浮效果 */
+.container:hover .card {
+    animation: none;
+}
+
+/* 调整全息效果的过渡 */
+.holographic-overlay {
+    transition: transform 0.1s ease-out;
+}
+
+/* 添加悬浮时的阴影效果 */
+.card-front.hover {
+    box-shadow: 
+        0 0 30px rgba(74, 58, 255, 0.3),
+        0 0 60px rgba(138, 111, 255, 0.2);
+}
+
+/* 添加背面样式 */
+.card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 8px;
+    overflow: hidden;
+    transform: rotateY(180deg) translateZ(1px); /* 将背面也往前推，避免与正面重叠 */
+    background: #000; /* 添加背景色确保不透明 */
+    clip-path: inset(0 0 0 0 round 8px);
+}
+
+.card-back img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: none;
+    background-color: #000;
+}
+
+/* 添加内部容器来处理圆角裁切 */
+.card-content {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    clip-path: inset(0 0 0 0 round 8px);
+}
+
+/* 背面图片样式 */
+.back-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.back-image.open {
+    z-index: 1; /* 保持在底层 */
+}
+
+.back-image.covered {
+    z-index: 2; /* 在上层 */
+    clip-path: inset(0 0 0 0); /* 初始完全显示 */
+    transition: clip-path 0.3s ease-out; /* 只保留clip-path过渡 */
+}
+
+/* 移除之前的遮罩层样式，我们不再需要外的遮罩元素 */
+.reveal-mask {
+    display: none;
+}
+
+/* 背景样式 */
+.background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 0;
+    background: none;
+}
+
+/* 登录表单样式 */
+.login-form {
+    position: absolute;
+    top: 172px;
+    right: 63px; /* 与logo对齐 */
+    width: calc(100% / 3); /* 与logo相同宽度 */
+    background: rgba(0, 0, 0, 0.6);
+    padding: 25px calc(100% / 3 * 0.1); /* 左右padding各设为logo宽度的10% */
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    z-index: 1;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(20px);
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+}
+
+.login-form.visible {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transform: translateY(0) !important;
+}
+
+.form-group {
+    width: 100%; /* 占满内容区域 */
+    margin-bottom: 20px;
+}
+
+.form-group:last-child {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 0;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px 15px;
+    height: 45px;
+    border: none;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    /* 添加滚动相关样式 */
+    white-space: nowrap;
+    overflow-x: scroll;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch; /* 在iOS上提供平滑滚动 */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+
+/* 隐藏 Webkit 滚动条 */
+.form-group input::-webkit-scrollbar {
+    display: none;
+}
+
+.form-group input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.form-group input:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 10px rgba(74, 58, 255, 0.3);
+}
+
+/* 按钮基础样式 */
+.submit-btn,
+.cancel-btn {
+    flex: 1;
+    padding: 15px;
+    border: none;
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 0; /* 移除底部间距 */
+}
+
+/* 确认按钮样式 */
+.submit-btn {
+    background: linear-gradient(45deg, #4A3AFF, #8A6FFF);
+    color: #fff;
+}
+
+/* 取消按钮样式 */
+.cancel-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* 按钮悬浮效果 */
+.submit-btn:hover,
+.cancel-btn:hover {
+    transform: translateY(-2px);
+}
+
+.submit-btn:hover {
+    box-shadow: 0 5px 15px rgba(74, 58, 255, 0.4);
+}
+
+.cancel-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* 按钮点击效果 */
+.submit-btn:active,
+.cancel-btn:active {
+    transform: translateY(0);
+}
+
+/* 表单淡出动画 */
+.login-form.fade-out {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* 显示器边框样式 */
+.monitor-frame {
+    padding: 2px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(calc(100vw + 50%), -50%);
+    width: 889px;
+    height: 515px;
+    background: #1a1a1a;
+    border-radius: 12px;
+    transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+    z-index: 2;
+}
+
+/* 显示器入场动画 */
+.monitor-frame.slide-in {
+    transform: translate(-50%, -50%);
+}
+
+/* 在小屏幕上缩放 */
+@media (max-width: 1000px) {
+    .monitor-frame {
+        width: 90vw;
+        height: calc((90vw - 44px) * 9 / 16 + 44px);
+    }
+}
+
+.monitor-bezel {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: #2a2a2a;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 
+        inset 0 0 0 1px #3a3a3a,
+        0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.monitor-screen {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    border-radius: 5px;
+    overflow: hidden;
+    /* 确保内容区域保持16:9 */
+    aspect-ratio: 16 / 9;
+}
+
+/* 电源指示灯 */
+.power-indicator {
+    position: absolute;
+    right: 20px;
+    bottom: 4px;
+    width: 24px;
+    height: 10px;
+    background: #1a1a1a;
+    border-radius: 3px;
+    padding: 2px;
+    box-shadow: 
+        inset 0 0 2px rgba(0, 0, 0, 0.5),
+        0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.power-light {
+    width: 5px;
+    height: 5px;
+    margin: 1px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #4CAF50, #45a049);
+    box-shadow: 
+        0 0 5px #4CAF50,
+        0 0 10px rgba(76, 175, 80, 0.5);
+    animation: blink 2s infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+/* 背景视频样式 */
+.background-video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+    opacity: 0.8; /* 稍微调低不透明度，让背景不那么刺眼 */
+}
+
+/* 显示器底座样式 */
+.monitor-stand {
+    position: absolute;
+    bottom: -80px;
+    left: 50%;
+    transform: translateX(-50%);
+    perspective: 1000px;
+    z-index: -1;
+}
+
+.stand-neck {
+    width: 48px;
+    height: 64px;
+    background: linear-gradient(90deg, #1a1a1a, #2a2a2a, #1a1a1a);
+    margin: 0 auto;
+    border-radius: 0;
+    transform: perspective(1000px) rotateX(25deg);
+    box-shadow: 
+        inset 1px 0 0 rgba(255, 255, 255, 0.1),
+        inset -1px 0 0 rgba(255, 255, 255, 0.1);
+    position: relative;
+    top: -12px;
+}
+
+.stand-base {
+    width: 160px;
+    height: 32px;
+    background: linear-gradient(90deg, #1a1a1a, #2a2a2a, #1a1a1a);
+    border-radius: 8px 8px 4px 4px;
+    position: relative;
+    transform: translateY(-16px) perspective(1000px) rotateX(25deg);
+    box-shadow: 
+        0 4px 8px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.stand-base::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 144px;
+    height: 4px;
+    background: #1a1a1a;
+    border-radius: 0 0 4px 4px;
+}
+
+/* 在小屏幕上调整底座大小 */
+@media (max-width: 900px) {
+    .monitor-stand {
+        bottom: -80px;
+    }
+    
+    .stand-neck {
+        width: 50px;
+        height: 70px;
+        top: -12px;
+    }
+    
+    .stand-base {
+        width: 160px;
+        height: 35px;
+    }
+    
+    .stand-base::after {
+        width: 140px;
+    }
+}
+
+/* 木质桌面样式 */
+.desk {
+    position: fixed;
+    top: 100vh;
+    left: 0;
+    width: 100%;
+    height: calc(100vh - (50% + 515px/2 + 80px - 16px));
+    background-image: url('wood.jpg');
+    background-size: cover;
+    background-position: top center;
+    box-shadow: 
+        0 -10px 30px rgba(0, 0, 0, 0.3),
+        inset 0 2px 5px rgba(255, 255, 255, 0.1);
+    z-index: 1;
+    transition: top 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* 桌面入场动画 */
+.desk.slide-in {
+    top: calc(50% + 515px/2 + 80px - 16px);
+}
+
+/* 移除之前的伪元素木纹效果 */
+.desk::before,
+.desk::after {
+    display: none;
+}
+
+/* 屏幕右上角logo样式 */
+.screen-logo {
+    position: absolute;
+    top: 20px;
+    right: 63px;
+    width: calc(100% / 3);
+    height: 140px; /* 设定固定高度，便于计算中心点 */
+    z-index: 1;
+    object-fit: contain;
+    pointer-events: none;
+    animation: breathe 3s ease-in-out infinite;
+    opacity: 1;
+    transition: opacity 0.3s ease-out;
+}
+
+@keyframes breathe {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+/* 菜单按钮容器 */
+.menu-buttons {
+    position: absolute;
+    top: 180px;
+    right: calc(63px + (100% / 3) * 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    z-index: 1;
+    width: calc((100% / 3) * 0.8);
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out, pointer-events 0.3s ease-out;
+}
+
+/* 菜单按钮隐藏状态 */
+.menu-buttons.hidden {
+    opacity: 0;
+    transform: translateY(-20px);
+    pointer-events: none;
+}
+
+/* 菜单按钮样式 */
+.menu-btn {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(45deg, #4A3AFF, #8A6FFF);
+    color: #fff;
+    font-size: 18px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+/* 按钮悬浮效果 */
+.menu-btn:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 
+        0 5px 15px rgba(74, 58, 255, 0.4),
+        0 0 20px rgba(138, 111, 255, 0.3);
+}
+
+/* 按钮点击效果 */
+.menu-btn:active {
+    transform: translateY(0) scale(0.98);
+}
+
+/* 按钮光晕效果 */
+.menu-btn::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(
+        circle,
+        rgba(255, 255, 255, 0.1) 0%,
+        transparent 70%
+    );
+    transform: scale(0);
+    transition: transform 0.5s ease-out;
+}
+
+.menu-btn:hover::before {
+    transform: scale(1);
+}
+
+/* 游戏币文本样式 */
+.game-currency {
+    position: absolute;
+    /* 计算垂直位置：
+       logo的top(20px) + (logo高度 - 文本高度)/2
+       logo高度 = 140px
+       文本高度 = 54px (padding 15px * 2 + 文字大小 24px)
+       = 20 + (140 - 54)/2
+       = 63px
+    */
+    top: 63px;
+    right: 63px;
+    width: calc(100% / 3);
+    padding: 15px;
+    color: #fff;
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+    z-index: 1;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
+}
+
+/* 当登录表单显示时的样式 */
+.game-currency.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.screen-logo.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* 通知横幅样式 */
+.notification-banner {
+    position: absolute;
+    top: -50px; /* 初始位置在屏幕外 */
+    left: 0;
+    width: 100%;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    font-size: 20px;
+    text-align: center;
+    transform: translateY(-100%);
+    opacity: 0;
+    z-index: 10;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(5px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.notification-banner.show {
+    transform: translateY(0);
+    opacity: 1;
+    top: 0;
+}
+
+.notification-text {
+    display: inline-block;
+    background: linear-gradient(45deg, #4A3AFF, #8A6FFF);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(74, 58, 255, 0.3);
+}
+
+/* 关机界面样式 */
+.shutdown-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #0000aa;
+    color: #ffffff;
+    font-family: 'Lucida Console', Monaco, monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    padding: 40px;
+    white-space: pre;
+    display: none;
+    z-index: 100;
+    letter-spacing: 1px;
+}
+
+.shutdown-screen.visible {
+    display: block;
+}
+
+/* 其他CSS保持不变... */ 

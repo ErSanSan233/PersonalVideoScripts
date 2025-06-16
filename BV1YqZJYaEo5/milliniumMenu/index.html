@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D卡片展示</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="monitor-frame">
+        <div class="monitor-bezel">
+            <div class="monitor-screen">
+                <div class="background">
+                    <video class="background-video" autoplay loop muted playsinline>
+                        <source src="back_2.mp4" type="video/mp4">
+                    </video>
+                    <div class="notification-banner">
+                        <span class="notification-text"></span>
+                    </div>
+                    <div class="shutdown-screen"></div>
+                    <img src="logo.png" alt="Logo" class="screen-logo">
+                    <div class="game-currency">赛车币：0</div>
+                    <div class="menu-buttons">
+                        <button class="menu-btn">开始</button>
+                        <button class="menu-btn">充值</button>
+                        <button class="menu-btn">退出</button>
+                    </div>
+                    <form class="login-form">
+                        <div class="form-group">
+                            <input type="text" id="cardNumber" placeholder="请输入卡号" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="password" placeholder="请输入密码" required>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="submit-btn">确认</button>
+                            <button type="button" class="cancel-btn">取消</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="power-indicator">
+                <div class="power-light"></div>
+            </div>
+        </div>
+        <div class="monitor-stand">
+            <div class="stand-neck"></div>
+            <div class="stand-base"></div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="card">
+            <div class="card-inner">
+                <div class="card-front">
+                    <div class="card-content">
+                        <div class="holographic-overlay"></div>
+                        <img src="front.png" alt="卡片正面">
+                        <div class="laser-effect"></div>
+                    </div>
+                </div>
+                <div class="card-back">
+                    <div class="card-content">
+                        <img src="back_open.png" alt="卡片背面-揭开" class="back-image open">
+                        <img src="back_covered.png" alt="卡片背面-遮罩" class="back-image covered">
+                        <div class="reveal-mask"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="desk"></div>
+    <script src="background.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
